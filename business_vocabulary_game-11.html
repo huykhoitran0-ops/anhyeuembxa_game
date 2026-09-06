@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Business Vocabulary Game</title>
+<style>
+*{box-sizing:border-box} body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#fff8df,#eef8ff);color:#263238}
+.wrap{max-width:900px;margin:auto;padding:22px}
+h1{text-align:center;margin:8px 0 4px;font-size:30px}
+.sub{text-align:center;margin:0 0 16px;color:#607d8b}
+.top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:white;border-radius:18px;padding:12px 16px;box-shadow:0 4px 16px #0001}
+button{border:0;border-radius:12px;padding:10px 15px;font-weight:700;cursor:pointer;background:#263238;color:white}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+.card{height:150px;border-radius:18px;border:3px solid #90caf9;background:#e3f2fd;display:flex;align-items:center;justify-content:center;text-align:center;cursor:pointer;perspective:800px}
+.card .in{font-size:19px;font-weight:800;padding:12px}.card .vi{font-size:16px;margin-top:8px;font-weight:500}
+.card.done{background:#dcedc8;border-color:#66bb6a}.card.wrong{animation:shake .25s}
+@keyframes shake{25%{transform:translateX(-5px)}50%{transform:translateX(5px)}75%{transform:translateX(-5px)}}
+@media(max-width:650px){.grid{grid-template-columns:repeat(2,1fr)}.card{height:125px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>🎮 Business Vocabulary</h1>
+<p class="sub">Ghép từ tiếng Anh với nghĩa tiếng Việt</p>
+<div class="top"><div>⭐ Điểm: <b id="score">0</b></div><div>🎯 Đúng: <b id="ok">0</b>/10</div><button onclick="restart()">Chơi lại</button></div>
+<div class="grid" id="grid"></div>
+</div>
+<script>
+const words=[
+["business","kinh doanh"],["company","công ty"],["customer","khách hàng"],["product","sản phẩm"],
+["service","dịch vụ"],["market","thị trường"],["brand","thương hiệu"],["competitor","đối thủ cạnh tranh"],
+["price","giá"],["cost","chi phí"],["profit","lợi nhuận"],["loss","khoản lỗ"],
+["sale","bán hàng / giảm giá"],["revenue","doanh thu"],["discount","giảm giá"],["payment","thanh toán"],
+["business owner","chủ doanh nghiệp"],["client","khách hàng"],["process","quy trình"],["persuasion","thuyết phục"]
+];
+let first=null,locked=false,score=0,ok=0;
+function shuffle(a){return a.sort(()=>Math.random()-.5)}
+function restart(){
+ first=null;locked=false;score=0;ok=0;document.getElementById("score").textContent=0;document.getElementById("ok").textContent=0;
+ const chosen=shuffle([...words]).slice(0,10);
+ const cards=shuffle(chosen.flatMap((w,i)=>[
+  {type:"en",id:i,text:w[0]}, {type:"vi",id:i,text:w[1]}
+ ]));
+ const g=document.getElementById("grid");g.innerHTML="";
+ cards.forEach(c=>{
+  const d=document.createElement("div");d.className="card";d.dataset.id=c.id;d.dataset.type=c.type;
+  d.innerHTML='<div class="in">❓<br><small>Nhấn để mở</small></div>';
+  d.onclick=()=>flip(d,c);g.appendChild(d);
+ });
+}
+function flip(d,c){
+ if(locked||d.classList.contains("done")||d===first)return;
+ d.querySelector(".in").innerHTML=c.type==="en"?`🇬🇧<br>${c.text}`:`🇻🇳<br>${c.text}`;
+ if(!first){first=d;return}
+ locked=true;
+ if(first.dataset.id===d.dataset.id && first.dataset.type!==d.dataset.type){
+   first.classList.add("done");d.classList.add("done");ok++;score+=10;
+   document.getElementById("ok").textContent=ok;document.getElementById("score").textContent=score;
+   first=null;locked=false;
+   if(ok===10)setTimeout(()=>alert("🎉 Xuất sắc! Bạn đã ghép đúng tất cả!"),250);
+ }else{
+   first.classList.add("wrong");d.classList.add("wrong");
+   score=Math.max(0,score-2);document.getElementById("score").textContent=score;
+   setTimeout(()=>{
+    first.querySelector(".in").innerHTML='❓<br><small>Nhấn để mở</small>';
+    d.querySelector(".in").innerHTML='❓<br><small>Nhấn để mở</small>';
+    first.classList.remove("wrong");d.classList.remove("wrong");first=null;locked=false;
+   },650);
+ }
+}
+restart();
+</script>
+</body></html>
